@@ -1,2 +1,2 @@
 # wgp-attendance
-DSWD Walang Gutom Program QR and Selfie Attendance
+ATTENDANCE SYSTEM
