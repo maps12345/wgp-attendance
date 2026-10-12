@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#7f1d1d">
+  <title>DSWD Walang Gutom Program Attendance</title>
+
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <style>
+    :root {
+      --red: #7f1d1d;
+      --gold: #eab308;
+      --bg: #f3f4f6;
+      --text: #1f2937;
+      --muted: #64748b;
+      --green: #166534;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: var(--red);
+      color: white;
+      border-bottom: 5px solid var(--gold);
+      padding: 22px 16px;
+    }
+
+    .brand {
+      max-width: 1000px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      border: 2px solid #f8df8a;
+      border-radius: 50%;
+      width: 62px;
+      height: 62px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: #ffe7a1;
+      font-weight: bold;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    h1 { font-size: 24px; margin: 0 0 6px; }
+    h2 { font-size: 19px; margin-top: 0; }
+    .subtitle { color: #ffe7a1; font-size: 14px; }
+
+    main {
+      max-width: 1000px;
+      margin: 22px auto;
+      padding: 0 14px 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 5px 18px #0000000b;
+      min-width: 0;
+    }
+
+    .wide { grid-column: 1 / -1; }
+
+    #reader {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+
+    video {
+      width: 100%;
+      display: block;
+      border-radius: 12px;
+      background: #111827;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      max-height: 360px;
+    }
+
+    #preview {
+      display: none;
+      width: 100%;
+      max-height: 240px;
+      object-fit: contain;
+      border-radius: 12px;
+      margin-top: 10px;
+      background: #e5e7eb;
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 9px;
+      margin-top: 7px;
+      font-size: 16px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      font-size: 14px;
+      margin-top: 15px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 9px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      background: var(--red);
+      color: white;
+      min-height: 44px;
+    }
+
+    button.secondary {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    button.gold {
+      background: var(--gold);
+      color: #422006;
+    }
+
+    button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 9px;
+      margin-top: 12px;
+    }
+
+    .buttons button { flex: 1; }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .notice {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 9px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .notice.ok {
+      background: #dcfce7;
+      color: var(--green);
+    }
+
+    .notice.error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .person {
+      display: none;
+      margin-top: 12px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .person strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 0 16px 25px;
+    }
+
+    @media (max-width: 720px) {
+      main { grid-template-columns: 1fr; }
+      .wide { grid-column: auto; }
+      h1 { font-size: 20px; }
+      .card { padding: 14px; }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">DSWD<br>WGP</div>
+    <div>
+      <h1>Walang Gutom Program</h1>
+      <div class="subtitle">QR + Selfie Attendance System</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>1. Scan Employee QR</h2>
+    <p class="muted">
+      Scan the QR code containing the employee's Employee ID.
+      You may also enter the ID manually.
+    </p>
+
+    <div id="reader"></div>
+
+    <div class="buttons">
+      <button id="startScan">Start QR Scanner</button>
+      <button id="stopScan" class="secondary">Stop Scanner</button>
+    </div>
+
+    <label for="employeeId">Employee ID</label>
+    <input id="employeeId" placeholder="Example: R8-0001" autocomplete="off">
+
+    <div class="buttons">
+      <button id="lookupButton" class="secondary">Find Employee</button>
+    </div>
+
+    <div id="person" class="person">
+      <strong id="employeeName"></strong>
+      <div id="employeePosition" class="muted"></div>
+      <div id="employeeDisplayId" class="muted"></div>
+    </div>
+
+    <div id="lookupMessage" class="notice">
+      Ready. Scan a QR code or enter an Employee ID.
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>2. Capture Selfie</h2>
+    <p class="muted">
+      The camera runs directly on this HTTPS page.
+      Allow camera access when your browser asks.
+    </p>
+
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas" hidden></canvas>
+    <img id="preview" alt="Captured selfie preview">
+
+    <div class="buttons">
+      <button id="openCamera">Open Camera</button>
+      <button id="capture" disabled>Capture Selfie</button>
+    </div>
+
+    <div class="buttons">
+      <button id="retake" class="secondary" disabled>Retake Selfie</button>
+    </div>
+
+    <div id="cameraMessage" class="notice">
+      Camera not started.
+    </div>
+  </section>
+
+  <section class="card wide">
+    <h2>3. Submit Attendance</h2>
+
+    <p class="muted">
+      Select the correct attendance action. Your PIN is checked
+      by Google Apps Script before a record is written.
+    </p>
+
+    <label for="employeePin">Employee PIN</label>
+    <input
+      id="employeePin"
+      type="password"
+      inputmode="numeric"
+      autocomplete="off"
+      maxlength="12"
+      placeholder="Enter your PIN"
+    >
+
+    <div class="actions">
+      <button data-action="TIME IN">TIME IN</button>
+      <button data-action="TIME OUT">TIME OUT</button>
+      <button class="gold" data-action="BREAK OUT">BREAK OUT</button>
+      <button class="gold" data-action="BREAK IN">BREAK IN</button>
+    </div>
+
+    <div id="submitMessage" class="notice">
+      Scan an employee QR, capture a selfie, and enter your PIN first.
+    </div>
+
+    <p class="muted">
+      Important: the browser cannot read the response from the
+      cross-origin Apps Script request in this version. Confirm
+      the attendance row in the Attendance sheet before relying
+      on the submission message.
+    </p>
+  </section>
+
+  <section class="card wide">
+    <h2>Attendance Schedule Reference</h2>
+
+    <p>
+      <strong>Monday:</strong> 8:00 AM–12:00 NN and
+      1:00 PM–5:00 PM.
+      <br><span class="muted">Late after 8:01 AM.</span>
+    </p>
+
+    <p>
+      <strong>Tuesday–Friday:</strong> Flexible schedule;
+      expected 7:00 AM–12:00 NN and 1:00 PM–4:00 PM.
+      <br><span class="muted">Late after 9:01 AM.</span>
+    </p>
+  </section>
+</main>
+
+<footer>
+  DSWD Walang Gutom Program • Attendance and selfie records are
+  stored in the authorized Google Sheets and private Drive folder.
+</footer>
+
+<script>
+/*
+ * IMPORTANT:
+ * Replace the URL below with your deployed Apps Script /exec URL.
+ */
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbwa4CfVPTWkTBdEJI88sCL-ol2cV0_fmcftHmenMFc720_TK5goZ73AN4CazFubHTztTg/exec";
+
+let scanner = null;
+let activeEmployee = null;
+let cameraStream = null;
+let selfieData = "";
+
+const $ = id => document.getElementById(id);
+
+function showMessage(id, message, type = "") {
+  const el = $(id);
+  el.textContent = message;
+  el.className = "notice" + (type ? " " + type : "");
+}
+
+function apiConfigured() {
+  if (
+    !API_URL.startsWith("https://script.google.com/macros/s/") ||
+    !API_URL.endsWith("/exec")
+  ) {
+    showMessage(
+      "lookupMessage",
+      "Please set API_URL in index.html to your deployed Apps Script URL ending in /exec.",
+      "error"
+    );
+    return false;
+  }
+
+  return true;
+}
+
+/*
+ * QR content should be an Employee ID, e.g. R8-0001.
+ * Also accepts WGP:R8-0001.
+ */
+function normalizeEmployeeId(raw) {
+  let value = String(raw || "").trim();
+
+  try {
+    const parsed = new URL(value);
+    value =
+      parsed.searchParams.get("id") ||
+      parsed.searchParams.get("employeeId") ||
+      value;
+  } catch (_) {}
+
+  if (value.startsWith("WGP:")) {
+    value = value.substring(4).trim();
+  }
+
+  if (!/^[A-Za-z0-9._-]{1,80}$/.test(value)) {
+    showMessage(
+      "lookupMessage",
+      "Invalid QR format. The QR should contain the Employee ID only.",
+      "error"
+    );
+    return "";
+  }
+
+  return value;
+}
+
+/*
+ * JSONP is used only for a single employee lookup.
+ * It does not return the employee PIN or the complete roster.
+ */
+function lookupEmployee(rawId) {
+  if (!apiConfigured()) return;
+
+  const id = normalizeEmployeeId(rawId);
+  if (!id) return;
+
+  $("employeeId").value = id;
+
+  showMessage("lookupMessage", "Searching for employee...");
+
+  const callback =
+    "wgpLookup_" + Date.now() + "_" +
+    Math.floor(Math.random() * 100000);
+
+  const script = document.createElement("script");
+
+  function cleanup() {
+    try {
+      delete window[callback];
+    } catch (_) {}
+
+    script.remove();
+  }
+
+  window[callback] = result => {
+    cleanup();
+
+    if (!result || !result.ok || !result.employee) {
+      activeEmployee = null;
+      $("person").style.display = "none";
+
+      showMessage(
+        "lookupMessage",
+        "Employee not found or inactive. Check the Employee ID and Employees sheet.",
+        "error"
+      );
+      return;
+    }
+
+    activeEmployee = result.employee;
+
+    $("employeeName").textContent =
+      activeEmployee.name || "Employee";
+
+    $("employeePosition").textContent =
+      activeEmployee.position || "";
+
+    $("employeeDisplayId").textContent =
+      "Employee ID: " + activeEmployee.id;
+
+    $("person").style.display = "block";
+
+    showMessage(
+      "lookupMessage",
+      "Employee found. Capture a selfie and enter your PIN.",
+      "ok"
+    );
+  };
+
+  script.onerror = () => {
+    cleanup();
+
+    showMessage(
+      "lookupMessage",
+      "Unable to contact Apps Script. Check the /exec URL and deployment permissions.",
+      "error"
+    );
+  };
+
+  script.src =
+    API_URL +
+    "?action=lookup&id=" + encodeURIComponent(id) +
+    "&callback=" + encodeURIComponent(callback) +
+    "&_=" + Date.now();
+
+  document.body.appendChild(script);
+}
+
+$("lookupButton").addEventListener("click", () => {
+  lookupEmployee($("employeeId").value);
+});
+
+$("employeeId").addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    lookupEmployee($("employeeId").value);
+  }
+});
+
+/* QR scanner */
+
+async function startScanner() {
+  if (!apiConfigured()) return;
+
+  try {
+    if (!window.Html5Qrcode) {
+      throw new Error("QR scanner library did not load.");
+    }
+
+    if (!scanner) {
+      scanner = new Html5Qrcode("reader");
+    }
+
+    const cameras = await Html5Qrcode.getCameras();
+
+    if (!cameras || cameras.length === 0) {
+      throw new Error("No camera was detected.");
+    }
+
+    const preferredCamera = cameras.find(camera =>
+      /back|rear|environment/i.test(camera.label)
+    );
+
+    await scanner.start(
+      preferredCamera ? preferredCamera.id : cameras[0].id,
+      {
+        fps: 10,
+        qrbox: { width: 230, height: 230 }
+      },
+      decodedText => {
+        scanner.pause(true);
+        lookupEmployee(decodedText);
+      },
+      () => {}
+    );
+
+    showMessage(
+      "lookupMessage",
+      "QR scanner active. Point the camera at an employee QR code.",
+      "ok"
+    );
+
+  } catch (error) {
+    showMessage(
+      "lookupMessage",
+      "QR camera error: " + (error.message || error) +
+      ". You can enter the Employee ID manually.",
+      "error"
+    );
+  }
+}
+
+async function stopScanner() {
+  if (!scanner) return;
+
+  try {
+    if (scanner.isScanning) {
+      await scanner.stop();
+    }
+  } catch (_) {}
+}
+
+$("startScan").addEventListener("click", startScanner);
+$("stopScan").addEventListener("click", stopScanner);
+
+/* Selfie camera */
+
+async function openCamera() {
+  try {
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia) {
+      throw new Error(
+        "Camera API unavailable. Open the HTTPS GitHub Pages URL."
+      );
+    }
+
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+    }
+
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: "user",
+        width: { ideal: 1280 },
+        height: { ideal: 960 }
+      },
+      audio: false
+    });
+
+    $("video").srcObject = cameraStream;
+    await $("video").play();
+
+    $("capture").disabled = false;
+
+    showMessage(
+      "cameraMessage",
+      "Camera is ready. Capture your selfie.",
+      "ok"
+    );
+
+  } catch (error) {
+    showMessage(
+      "cameraMessage",
+      "Camera error: " + (error.name || "") + " — " +
+      (error.message || error) +
+      ". Confirm that this is the HTTPS GitHub Pages address and that camera access is allowed.",
+      "error"
+    );
+  }
+}
+
+function captureSelfie() {
+  const video = $("video");
+
+  if (!cameraStream || !video.videoWidth) {
+    showMessage(
+      "cameraMessage",
+      "Camera is not ready. Click Open Camera first.",
+      "error"
+    );
+    return;
+  }
+
+  const canvas = $("canvas");
+  const maxWidth = 720;
+  const scale = Math.min(1, maxWidth / video.videoWidth);
+
+  canvas.width = Math.round(video.videoWidth * scale);
+  canvas.height = Math.round(video.videoHeight * scale);
+
+  canvas.getContext("2d").drawImage(
+    video, 0, 0, canvas.width, canvas.height
+  );
+
+  selfieData = canvas.toDataURL("image/jpeg", 0.72);
+
+  $("preview").src = selfieData;
+  $("preview").style.display = "block";
+
+  $("capture").disabled = true;
+  $("retake").disabled = false;
+
+  showMessage(
+    "cameraMessage",
+    "Selfie captured. Retake if needed.",
+    "ok"
+  );
+}
+
+function retakeSelfie() {
+  selfieData = "";
+  $("preview").src = "";
+  $("preview").style.display = "none";
+
+  $("capture").disabled = !cameraStream;
+  $("retake").disabled = true;
+
+  showMessage(
+    "cameraMessage",
+    "Ready to capture another selfie."
+  );
+}
+
+$("openCamera").addEventListener("click", openCamera);
+$("capture").addEventListener("click", captureSelfie);
+$("retake").addEventListener("click", retakeSelfie);
+
+/* Submit attendance */
+
+async function submitAttendance(action) {
+  if (!apiConfigured()) return;
+
+  if (!activeEmployee) {
+    showMessage(
+      "submitMessage",
+      "Scan a valid employee QR or find an Employee ID first.",
+      "error"
+    );
+    return;
+  }
+
+  const pin = $("employeePin").value.trim();
+
+  if (!pin) {
+    showMessage(
+      "submitMessage",
+      "Please enter your Employee PIN.",
+      "error"
+    );
+    $("employeePin").focus();
+    return;
+  }
+
+  if (!selfieData) {
+    showMessage(
+      "submitMessage",
+      "Please capture a selfie before submitting.",
+      "error"
+    );
+    return;
+  }
+
+  const payload = {
+    employeeId: activeEmployee.id,
+    pin: pin,
+    action: action,
+    selfieData: selfieData
+  };
+
+  document.querySelectorAll("[data-action]").forEach(button => {
+    button.disabled = true;
+  });
+
+  showMessage(
+    "submitMessage",
+    "Sending " + action + " request. Please wait..."
+  );
+
+  try {
+    /*
+     * Apps Script ContentService does not provide a dependable
+     * cross-origin response to this GitHub Pages client.
+     * no-cors lets the browser send the POST, but the response is opaque.
+     * Therefore this message is NOT proof that the server recorded it.
+     */
+    await fetch(API_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=UTF-8"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    showMessage(
+      "submitMessage",
+      "Request sent for " + activeEmployee.name + " — " + action +
+      ". Verify the Attendance sheet before submitting again.",
+      "ok"
+    );
+
+    $("employeePin").value = "";
+    selfieData = "";
+    $("preview").src = "";
+    $("preview").style.display = "none";
+    $("capture").disabled = !cameraStream;
+    $("retake").disabled = true;
+
+  } catch (error) {
+    showMessage(
+      "submitMessage",
+      "Request could not be sent: " + (error.message || error),
+      "error"
+    );
+
+  } finally {
+    document.querySelectorAll("[data-action]").forEach(button => {
+      button.disabled = false;
+    });
+  }
+}
+
+document.querySelectorAll("[data-action]").forEach(button => {
+  button.addEventListener("click", () => {
+    submitAttendance(button.dataset.action);
+  });
+});
+
+window.addEventListener("beforeunload", () => {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+  }
+});
+</script>
+</body>
+</html>
