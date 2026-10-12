@@ -5,279 +5,425 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Walang Gutom Program Attendance</title>
-<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#f1f7f2;color:#183323}
-header{background:#166534;color:white;text-align:center;padding:24px 12px}
-.logo{margin:auto auto 10px;border:3px solid white;border-radius:50%;width:58px;height:58px;display:grid;place-items:center;font-weight:bold}
-main{max-width:720px;margin:15px auto;padding:0 12px}
-.card{background:white;border:1px solid #d5e4d9;border-radius:16px;padding:17px;margin-bottom:14px}
-h2{font-size:18px;margin-top:0}
-button,input{font:inherit;padding:12px;border-radius:10px}
-button{border:0;background:#166534;color:white;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.45}
-input{border:1px solid #b7c9bc;max-width:100%;min-width:0}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-.row>*{flex:1}
-#reader{max-width:400px;margin:12px auto}
-video{width:100%;max-width:400px;border-radius:12px;background:#111}
-.photo{width:130px;height:130px;object-fit:cover;border-radius:14px}
+:root {
+  --blue:#123b70; --blue2:#2463a6; --lightblue:#e8f1fc;
+  --red:#b42332; --lightred:#fce8ea; --ink:#1d2939;
+  --muted:#667085; --line:#d9e2ef; --bg:#f4f7fb;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,sans-serif}
+header{background:linear-gradient(110deg,var(--blue),var(--blue2));color:white;padding:22px}
+.header-inner{max-width:1200px;margin:auto;display:flex;align-items:center;gap:15px}
+.logo{border:2px solid white;border-radius:50%;width:55px;height:55px;display:grid;place-items:center;font-weight:bold}
+header h1{font-size:clamp(19px,3vw,28px);margin:0 0 5px}
+header p{font-size:11px;letter-spacing:1.5px;margin:0}
+main{max-width:1200px;margin:24px auto;padding:0 16px}
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.panel{background:white;border:1px solid var(--line);border-radius:17px;overflow:hidden;box-shadow:0 8px 26px #123b7010}
+.panel h2{font-size:15px;margin:0;padding:19px;border-bottom:1px solid var(--line)}
+.content{padding:20px}
+label{display:block;font-size:12px;font-weight:bold;margin:0 0 8px}
+input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:9px;font-size:15px}
+button{border:0;border-radius:9px;padding:12px;font-weight:bold;cursor:pointer;font-size:13px}
+button:disabled{opacity:.5;cursor:not-allowed}
+.blue{background:var(--blue2);color:white}
+.red{background:var(--red);color:white}
+.outline{background:white;color:var(--blue2);border:1px solid #b8cde6}
+.soft{background:#edf2f7;color:#344054}
+.full{width:100%}
+.row{display:flex;gap:8px}
+.row>*{min-width:0}
+.row input{flex:1}
+.help{font-size:12px;line-height:1.5;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:19px 0}
+.camera{background:#101828;border-radius:12px;min-height:220px;overflow:hidden;display:grid;place-items:center}
+video{display:block;width:100%;max-height:340px;object-fit:cover;transform:scaleX(-1)}
+.camera-placeholder{color:#ddd;text-align:center;padding:25px}
+.camera-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
 .hidden{display:none!important}
-.status{padding:12px;background:#edf2ee;border-radius:10px;margin:10px 0}
-.actions{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.actions button{background:#e7f4e9;color:#14532d;border:2px solid transparent}
-.actions button.active{border-color:#166534;background:#d1fae5}
-table{width:100%;border-collapse:collapse}
-th,td{padding:12px 8px;border-bottom:1px solid #dce5df;text-align:left}
-th{background:#edf7ef}
-td.time{font-weight:bold}
-small{color:#647067}
+#qr-reader{margin-top:12px}
+#selfiePreview{width:100%;max-height:280px;object-fit:contain;border-radius:10px;margin-top:10px;background:#edf0f5}
+#clockBtn{margin-top:15px;padding:16px;font-size:15px}
+.status{display:none;padding:12px;margin-top:12px;border-radius:9px;font-size:13px;line-height:1.5}
+.status.show{display:block}
+.info{background:var(--lightblue);color:var(--blue)}
+.success{background:#e8f7ee;color:#137547}
+.error{background:var(--lightred);color:#84202a}
+.person{display:flex;align-items:center;gap:12px;padding:13px;background:#f8fafc;border:1px solid var(--line);border-radius:12px;margin-bottom:15px}
+.avatar{width:45px;height:45px;display:grid;place-items:center;background:var(--lightred);color:var(--red);border-radius:12px;font-size:20px}
+.person-name{font-size:17px;font-weight:bold;overflow-wrap:anywhere}
+.person-id{font-size:12px;color:var(--muted);margin-top:5px}
+.latest{display:grid;grid-template-columns:1fr 125px;gap:12px;padding:12px;background:#fffafb;border:1px solid #f0c6cb;border-radius:12px;margin-bottom:17px;align-items:center}
+.latest h3{font-size:11px;color:var(--red);margin:0 0 8px}
+.latest-action{font-size:17px;font-weight:bold}
+.latest-time{font-size:12px;color:var(--muted);margin-top:6px}
+.latest img{width:100%;border-radius:9px;object-fit:cover;max-height:160px}
+.history-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:10px}
+.history-head h3{font-size:14px;margin:0}
+#historyGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.history-item{border:1px solid var(--line);border-radius:11px;padding:10px;min-width:0}
+.history-label{font-size:11px;color:var(--blue2);font-weight:bold}
+.history-time{font-size:14px;font-weight:bold;margin:7px 0 9px}
+.history-photo,.empty-photo{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:7px;background:#f2f4f7}
+.empty-photo{display:grid;place-items:center;color:#98a2b3;text-align:center;font-size:11px;padding:8px}
+.note{font-size:11px;color:var(--muted);line-height:1.5}
+footer{text-align:center;color:#98a2b3;font-size:11px;padding:20px}
+@media(max-width:780px){.columns{grid-template-columns:1fr}main{padding:0 10px;margin:14px auto}.content{padding:15px}header{padding:17px 12px}}
+@media(max-width:360px){.latest{grid-template-columns:1fr 100px}.camera-controls{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <header>
-  <div class="logo">WGP</div>
-  <h1>Walang Gutom Program</h1>
-  <div>QR Code + Selfie Attendance</div>
+  <div class="header-inner">
+    <div class="logo">WGP</div>
+    <div>
+      <h1>Walang Gutom Program</h1>
+      <p>EMPLOYEE ATTENDANCE SYSTEM · QR + SELFIE</p>
+    </div>
+  </div>
 </header>
+
 <main>
-  <section class="card">
-    <h2>1. Scan Employee QR Code</h2>
-    <div id="reader"></div>
-    <div class="row">
-      <button id="scanBtn">Open QR Scanner</button>
-      <button id="stopBtn" disabled>Stop Scanner</button>
-    </div>
-    <p><small>Or enter Employee ID manually:</small></p>
-    <div class="row">
-      <input id="empId" placeholder="Employee ID">
-      <button id="findBtn">Find Employee</button>
-    </div>
-    <p id="employeeInfo"></p>
-  </section>
+<div class="columns">
 
-  <section class="card">
-    <h2>2. Select Attendance</h2>
-    <div class="actions">
-      <button class="active" data-action="TIME IN">🟢 Time In</button>
-      <button data-action="BREAK OUT">☕ Break Out</button>
-      <button data-action="BREAK IN">↩️ Break In</button>
-      <button data-action="TIME OUT">🏁 Time Out</button>
-    </div>
-  </section>
+<section class="panel">
+<h2>01 · ATTENDANCE CHECK-IN / OUT</h2>
+<div class="content">
+  <label for="employeeId">Scan Employee QR Code</label>
+  <div class="row">
+    <input id="employeeId" placeholder="Enter Employee ID" autocomplete="off">
+    <button class="outline" id="findBtn">Find</button>
+  </div>
+  <div class="row" style="margin-top:9px">
+    <button class="blue full" id="scanBtn">▦ Scan QR Code</button>
+    <button class="soft full" id="stopScanBtn" disabled>Stop Scanner</button>
+  </div>
+  <div id="qr-reader" class="hidden"></div>
+  <p class="help">The QR code should contain the employee ID, such as WGP-001.</p>
 
-  <section class="card">
-    <h2>3. Take Selfie</h2>
-    <p><small>Allow camera access in Chrome. Use the HTTPS GitHub Pages website.</small></p>
+  <hr>
+  <label>Selfie for attendance proof</label>
+  <div class="camera">
     <video id="video" autoplay playsinline muted class="hidden"></video>
-    <canvas id="canvas" class="hidden"></canvas>
-    <div class="row">
-      <button id="openCamera">Open Front Camera</button>
-      <button id="takePhoto" disabled>Take Selfie</button>
+    <div id="cameraPlaceholder" class="camera-placeholder">
+      <div style="font-size:35px">📷</div>
+      <b>Front camera not started</b>
+      <p class="help" style="color:#ddd">Click Start Front Camera.</p>
     </div>
-    <div id="previewBox" class="hidden">
-      <p><img id="preview" class="photo" alt="Current selfie"></p>
-      <button id="retake">Retake Selfie</button>
-    </div>
-  </section>
+  </div>
+  <div class="camera-controls">
+    <button class="blue" id="cameraBtn">Start Front Camera</button>
+    <button class="outline" id="captureBtn" disabled>Take Selfie</button>
+  </div>
+  <canvas id="canvas" class="hidden"></canvas>
+  <img id="selfiePreview" class="hidden" alt="Selfie preview">
+  <p id="selfieStatus" class="help">No selfie captured yet.</p>
 
-  <section class="card">
-    <h2>4. Submit Attendance</h2>
-    <div id="status" class="status">Scan an employee QR code to begin.</div>
-    <button id="submit" disabled style="width:100%">Submit Attendance</button>
-  </section>
+  <button id="clockBtn" class="red full" disabled>CLOCK IN / OUT</button>
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+</div>
+</section>
 
-  <section class="card hidden" id="confirmation">
-    <h2>✅ Attendance Saved!</h2>
-    <div class="row">
-      <img id="savedPhoto" class="photo" alt="Latest selfie">
-      <div>
-        <strong id="savedName"></strong>
-        <p id="savedId"></p>
-        <small>Attendance action</small>
-        <p><strong id="savedAction"></strong></p>
-        <small>Recorded time</small>
-        <h2 id="savedTime"></h2>
+<section class="panel">
+<h2>02 · EMPLOYEE DETAILS & DAILY HISTORY</h2>
+<div class="content">
+  <div id="noEmployee" class="status info show">
+    Scan or enter an Employee ID to view the employee's name and today's attendance.
+  </div>
+  <div id="employeeArea" class="hidden">
+    <div class="person">
+      <div class="avatar">✓</div>
+      <div style="min-width:0">
+        <div class="person-name" id="employeeName"></div>
+        <div class="person-id" id="employeeCode"></div>
       </div>
     </div>
-    <p><small>Only your latest selfie is shown here. Previous selfies are retained in the administrator's private Drive folder.</small></p>
-  </section>
 
-  <section class="card">
-    <h2>Today's Attendance Summary</h2>
-    <p id="summaryDate"><small>Unrecorded times remain blank.</small></p>
-    <table>
-      <thead><tr><th>Attendance</th><th>Recorded Time</th></tr></thead>
-      <tbody>
-        <tr><td>Time In</td><td class="time" id="tIn"></td></tr>
-        <tr><td>Break Out</td><td class="time" id="bOut"></td></tr>
-        <tr><td>Break In</td><td class="time" id="bIn"></td></tr>
-        <tr><td>Time Out</td><td class="time" id="tOut"></td></tr>
-      </tbody>
-    </table>
-    <button id="refresh" disabled style="width:100%;margin-top:12px">Refresh My Attendance</button>
-  </section>
+    <div id="latest" class="latest hidden">
+      <div>
+        <h3>LATEST SAVED ATTENDANCE</h3>
+        <div class="latest-action" id="latestAction"></div>
+        <div class="latest-time" id="latestTime"></div>
+        <p class="help" id="latestMessage"></p>
+      </div>
+      <div id="latestPhoto"></div>
+    </div>
+
+    <div class="history-head">
+      <h3>Today's Attendance</h3>
+      <span class="help" id="todayDate"></span>
+    </div>
+    <div id="historyGrid"></div>
+    <p class="note">A blank time means no record exists for that action today. Each available entry shows its saved selfie.</p>
+    <button class="outline full" id="refreshBtn">Refresh Attendance History</button>
+  </div>
+</div>
+</section>
+
+</div>
+<footer>Walang Gutom Program · Attendance records stored in Google Sheets and Google Drive.</footer>
 </main>
 
 <script>
-// REPLACE this placeholder with your deployed Google Apps Script URL ending in /exec.
-const API_URL = "https://script.google.com/macros/s/AKfycbxzvqxbF-okPF9cj-KZJ6LSRyuQN_eOALumDWBGLZupBk-9roxGGILOuhlzISlLUM7D/exec";
+/* PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT URL ENDING IN /exec BELOW */
+const API_URL = "https://script.google.com/macros/s/AKfycbzaGzm5DCuX9-27J_qeoScviUz90YKiV1bVPUfqKuqg2mIhXdQKEVbH1d8uM7eeDlx-xQ/exec";
 
-let employee = null;
-let action = "TIME IN";
-let selfie = "";
-let stream = null;
-let scanner = null;
-let busy = false;
+const ACTIONS = ["AM Time In","AM Time Out","PM Time In","PM Time Out"];
 const $ = id => document.getElementById(id);
 
-function message(text, type="") {
-  $("status").textContent = text;
-  $("status").style.background = type==="ok" ? "#dcfce7" : type==="err" ? "#fee2e2" : "#edf2ee";
+let employee = null;
+let stream = null;
+let selfieData = "";
+let scanner = null;
+let submitting = false;
+
+function showStatus(message, type="info") {
+  $("status").textContent = message;
+  $("status").className = "status show " + type;
+}
+function clearStatus() {
+  $("status").className = "status";
+  $("status").textContent = "";
+}
+function apiReady() {
+  if (API_URL.includes("https://script.google.com/macros/s/AKfycbzaGzm5DCuX9-27J_qeoScviUz90YKiV1bVPUfqKuqg2mIhXdQKEVbH1d8uM7eeDlx-xQ/exec")) {
+    showStatus("Add your Apps Script /exec URL in index.html first.", "error");
+    return false;
+  }
+  return true;
 }
 
-function ready() {
-  return API_URL.startsWith("https://script.google.com/macros/s/") && API_URL.endsWith("/exec");
-}
-
-function api(params) {
-  return new Promise((resolve,reject)=>{
-    if (!ready()) return reject(new Error("Set your Apps Script /exec URL in index.html first."));
-    const cb = "wgp_" + Date.now() + "_" + Math.floor(Math.random()*10000);
+function jsonp(params) {
+  return new Promise((resolve,reject) => {
+    const callback = "wgp_" + Date.now() + "_" + Math.floor(Math.random()*100000);
     const script = document.createElement("script");
-    const timer = setTimeout(()=>finish(new Error("Server timeout. Check your Apps Script deployment.")),12000);
-    function finish(err,data) {
+    const query = new URLSearchParams({...params,callback,_:Date.now()});
+    let done = false;
+
+    const timer = setTimeout(() => finish(new Error("Server response timed out.")),25000);
+
+    function finish(error,data) {
+      if(done) return;
+      done = true;
       clearTimeout(timer);
-      delete window[cb];
+      try { delete window[callback]; } catch(e) { window[callback]=undefined; }
       script.remove();
-      err ? reject(err) : resolve(data);
+      if(error) reject(error); else resolve(data);
     }
-    window[cb] = data => finish(null,data);
-    script.onerror = ()=>finish(new Error("Cannot connect to Apps Script. Check URL and deployment access."));
-    script.src = API_URL + "?" + new URLSearchParams({...params,callback:cb,_:Date.now()});
+
+    window[callback] = data => finish(null,data);
+    script.onerror = () => finish(new Error("Cannot connect to Apps Script. Check your /exec URL and deployment."));
+    script.src = API_URL + (API_URL.includes("?") ? "&" : "?") + query.toString();
     document.body.appendChild(script);
   });
 }
 
-function parseQR(text) {
-  text = String(text||"").trim();
-  try {
-    const obj = JSON.parse(text);
-    if (obj.employeeId || obj.id) return String(obj.employeeId || obj.id);
-  } catch(e) {}
-  try {
-    const u = new URL(text);
-    if (u.searchParams.get("employeeId")) return u.searchParams.get("employeeId");
-  } catch(e) {}
-  return text;
-}
+async function lookupEmployee(id) {
+  if(!apiReady()) return;
+  id = String(id || "").trim();
+  if(!id) { showStatus("Please scan or enter an Employee ID.", "error"); return; }
 
-async function lookup(id) {
-  id = parseQR(id || $("empId").value);
-  if (!id) return message("Please scan or enter Employee ID.","err");
-  stopScanner();
-  message("Checking employee...");
+  $("findBtn").disabled = true;
+  showStatus("Finding employee…");
+
   try {
-    const res = await api({action:"lookup",employeeId:id});
-    if (!res.ok) throw new Error(res.message);
-    employee = res.employee;
-    $("empId").value = employee.id;
-    $("employeeInfo").textContent = employee.name + " — " + employee.id;
-    $("refresh").disabled = false;
-    $("confirmation").classList.add("hidden");
-    message("Employee found. Select attendance action and take a selfie.","ok");
-    await refreshSummary();
-    updateSubmit();
-  } catch(e) {
+    const result = await jsonp({action:"lookup",employeeId:id});
+    if(!result.ok) throw new Error(result.error || "Employee not found.");
+
+    employee = result.employee;
+    $("employeeId").value = employee.id;
+    $("employeeName").textContent = employee.name;
+    $("employeeCode").textContent = "Employee ID: " + employee.id;
+    $("employeeArea").classList.remove("hidden");
+    $("noEmployee").classList.add("hidden");
+
+    clearStatus();
+    await refreshHistory();
+    updateButton();
+  } catch(error) {
     employee = null;
-    $("employeeInfo").textContent = "";
-    updateSubmit();
-    message(e.message,"err");
+    $("employeeArea").classList.add("hidden");
+    $("noEmployee").classList.remove("hidden");
+    showStatus(error.message || "Employee lookup failed.", "error");
+    updateButton();
+  } finally {
+    $("findBtn").disabled = false;
   }
 }
 
-function updateSubmit() {
-  $("submit").disabled = !(employee && selfie && !busy);
+function updateButton() {
+  $("clockBtn").disabled = !(employee && selfieData && !submitting);
 }
 
-async function startScanner() {
+function makePhoto(src, className, alt) {
+  const img = document.createElement("img");
+  img.src = src;
+  img.className = className;
+  img.alt = alt;
+  return img;
+}
+
+function renderHistory(data) {
+  $("todayDate").textContent = new Date().toLocaleDateString("en-PH", {
+    year:"numeric",month:"short",day:"numeric"
+  });
+
+  const entries = data.entries || {};
+  const grid = $("historyGrid");
+  grid.innerHTML = "";
+
+  ACTIONS.forEach(action => {
+    const entry = entries[action];
+    const card = document.createElement("div");
+    card.className = "history-item";
+
+    const label = document.createElement("div");
+    label.className = "history-label";
+    label.textContent = action;
+
+    const time = document.createElement("div");
+    time.className = "history-time";
+    time.textContent = entry && entry.time ? entry.time : "—";
+
+    card.append(label,time);
+
+    if(entry && entry.selfieData) {
+      card.appendChild(makePhoto(entry.selfieData,"history-photo",action+" selfie"));
+    } else {
+      const empty = document.createElement("div");
+      empty.className = "empty-photo";
+      empty.textContent = entry ? "Selfie preview unavailable" : "No selfie recorded";
+      card.appendChild(empty);
+    }
+
+    grid.appendChild(card);
+  });
+
+  const records = data.records || [];
+  if(records.length) {
+    const latest = records[records.length-1];
+    $("latest").classList.remove("hidden");
+    $("latestAction").textContent = latest.action;
+    $("latestTime").textContent = (latest.date || data.date || "") + " · " + (latest.time || "");
+    $("latestMessage").textContent = "Attendance recorded for " + employee.name + ".";
+    $("latestPhoto").innerHTML = "";
+
+    if(latest.selfieData) {
+      $("latestPhoto").appendChild(makePhoto(latest.selfieData,"history-photo","Latest attendance selfie"));
+    } else {
+      $("latestPhoto").textContent = "Selfie preview unavailable";
+      $("latestPhoto").className = "empty-photo";
+    }
+  } else {
+    $("latest").classList.add("hidden");
+  }
+}
+
+async function refreshHistory() {
+  if(!employee || !apiReady()) return;
+  $("refreshBtn").disabled = true;
+
   try {
-    if (!scanner) scanner = new Html5Qrcode("reader");
-    $("scanBtn").disabled = true;
-    $("stopBtn").disabled = false;
-    await scanner.start({facingMode:"environment"},{fps:10,qrbox:230},
-      text => { $("empId").value = parseQR(text); lookup(text); },
-      () => {});
-    message("Point the camera at the employee QR code.");
-  } catch(e) {
-    $("scanBtn").disabled = false;
-    $("stopBtn").disabled = true;
-    message("QR camera could not open. Allow camera access or enter the ID manually. " + e.message,"err");
+    const result = await jsonp({action:"summary",employeeId:employee.id});
+    if(!result.ok) throw new Error(result.error || "Could not load history.");
+    renderHistory(result);
+  } catch(error) {
+    showStatus("Could not load history: " + error.message, "error");
+  } finally {
+    $("refreshBtn").disabled = false;
   }
 }
 
-async function stopScanner() {
-  if (scanner) {
-    try { if (scanner.isScanning) await scanner.stop(); } catch(e) {}
+async function startCamera() {
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showStatus("Camera needs an HTTPS website. Open your GitHub Pages URL.", "error");
+    return;
   }
-  $("scanBtn").disabled = false;
-  $("stopBtn").disabled = true;
-}
 
-async function openCamera() {
-  closeCamera();
+  stopCamera();
+
   try {
     stream = await navigator.mediaDevices.getUserMedia({
       audio:false,
-      video:{facingMode:{ideal:"user"},width:{ideal:720},height:{ideal:720}}
+      video:{
+        facingMode:{ideal:"user"},
+        width:{ideal:1280},
+        height:{ideal:720}
+      }
     });
+
     $("video").srcObject = stream;
     $("video").classList.remove("hidden");
-    $("takePhoto").disabled = false;
-    message("Camera ready. Center your face and take a selfie.","ok");
-  } catch(e) {
-    message("Camera failed. Open the HTTPS GitHub Pages link and allow camera access. " + e.message,"err");
+    $("cameraPlaceholder").classList.add("hidden");
+    $("captureBtn").disabled = false;
+    await $("video").play();
+    $("selfieStatus").textContent = "Camera ready. Take a selfie before submitting.";
+    clearStatus();
+  } catch(error) {
+    let message = "Unable to open the camera.";
+    if(error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+      message = "Camera permission denied. Allow Camera in Chrome site settings, then try again.";
+    } else if(error.name === "NotFoundError") {
+      message = "No camera was found on this device.";
+    } else if(error.name === "NotReadableError") {
+      message = "The camera may be in use by another application.";
+    }
+    showStatus(message,"error");
   }
 }
 
-function closeCamera() {
-  if (stream) stream.getTracks().forEach(t=>t.stop());
+function stopCamera() {
+  if(stream) stream.getTracks().forEach(track => track.stop());
   stream = null;
   $("video").srcObject = null;
   $("video").classList.add("hidden");
-  $("takePhoto").disabled = true;
+  $("cameraPlaceholder").classList.remove("hidden");
+  $("captureBtn").disabled = true;
 }
 
-function takeSelfie() {
-  const v = $("video"), c = $("canvas");
-  if (!stream || !v.videoWidth) return message("Open the camera first.","err");
-  const scale = Math.min(1,640/v.videoWidth);
-  c.width = Math.round(v.videoWidth*scale);
-  c.height = Math.round(v.videoHeight*scale);
-  const ctx = c.getContext("2d");
-  ctx.translate(c.width,0);
+function captureSelfie() {
+  const video = $("video");
+  if(!stream || !video.videoWidth) {
+    showStatus("Start the front camera first.","error");
+    return;
+  }
+
+  const canvas = $("canvas");
+  const scale = Math.min(1,900/video.videoWidth);
+  canvas.width = Math.round(video.videoWidth*scale);
+  canvas.height = Math.round(video.videoHeight*scale);
+
+  const ctx = canvas.getContext("2d");
+  ctx.translate(canvas.width,0);
   ctx.scale(-1,1);
-  ctx.drawImage(v,0,0,c.width,c.height);
-  selfie = c.toDataURL("image/jpeg",0.7);
-  $("preview").src = selfie;
-  $("previewBox").classList.remove("hidden");
-  $("confirmation").classList.add("hidden");
-  closeCamera();
-  updateSubmit();
-  message("Selfie captured. Submit your attendance.","ok");
+  ctx.drawImage(video,0,0,canvas.width,canvas.height);
+
+  selfieData = canvas.toDataURL("image/jpeg",0.72);
+  $("selfiePreview").src = selfieData;
+  $("selfiePreview").classList.remove("hidden");
+  $("selfieStatus").textContent = "Selfie captured. Retake if needed.";
+  updateButton();
+  clearStatus();
 }
 
-async function submitAttendance() {
-  if (busy || !employee || !selfie) return;
-  if (!ready()) return message("Replace API_URL with your Apps Script /exec URL.","err");
+async function clockInOut() {
+  if(!employee) { showStatus("Scan the employee QR code first.","error"); return; }
+  if(!selfieData) { showStatus("Please take a selfie first.","error"); return; }
+  if(!apiReady() || submitting) return;
 
-  busy = true;
-  updateSubmit();
-  $("submit").textContent = "Submitting...";
-  message("Saving attendance and selfie. Please wait...");
+  submitting = true;
+  updateButton();
+  $("clockBtn").textContent = "SAVING ATTENDANCE…";
+  showStatus("Saving attendance and selfie. Please wait…");
 
-  const requestId = "WGP-" + Date.now() + "-" + Math.random().toString(36).slice(2,8);
+  const requestId = (crypto.randomUUID)
+    ? crypto.randomUUID()
+    : "req-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+
   try {
+    // The POST response is opaque cross-origin; poll status to confirm the save.
     await fetch(API_URL,{
       method:"POST",
       mode:"no-cors",
@@ -285,72 +431,116 @@ async function submitAttendance() {
       body:JSON.stringify({
         requestId:requestId,
         employeeId:employee.id,
-        action:action,
-        selfieData:selfie
+        selfieData:selfieData
       })
     });
 
-    let result = null;
-    for (let i=0;i<12;i++) {
-      await new Promise(r=>setTimeout(r,1500));
-      const s = await api({action:"status",requestId:requestId});
-      if (s.saved) { result=s; break; }
+    let confirmed = null;
+
+    for(let i=0;i<15;i++) {
+      await new Promise(resolve => setTimeout(resolve,1200));
+      const result = await jsonp({action:"status",requestId});
+      if(result.ok && result.saved) {
+        confirmed = result.record;
+        break;
+      }
     }
-    if (!result) throw new Error("Could not confirm that the record was saved. Check with the administrator before retrying.");
 
-    $("confirmation").classList.remove("hidden");
-    $("savedPhoto").src = selfie;
-    $("savedName").textContent = result.employeeName || employee.name;
-    $("savedId").textContent = "Employee ID: " + (result.employeeId || employee.id);
-    $("savedAction").textContent = result.action;
-    $("savedTime").textContent = result.time || "";
-    message("Attendance saved successfully.","ok");
-    await refreshSummary();
-  } catch(e) {
-    message(e.message || "Submission failed.","err");
+    if(!confirmed) {
+      throw new Error("Save was not confirmed. Refresh history before retrying.");
+    }
+
+    showStatus(
+      "Saved! " + confirmed.employeeName + " — " +
+      confirmed.action + " at " + confirmed.time,
+      "success"
+    );
+
+    // Show the just-captured selfie immediately, then reload saved history.
+    $("latest").classList.remove("hidden");
+    $("latestAction").textContent = confirmed.action;
+    $("latestTime").textContent = confirmed.date + " · " + confirmed.time;
+    $("latestMessage").textContent = "Attendance saved successfully.";
+    $("latestPhoto").innerHTML = "";
+    $("latestPhoto").appendChild(makePhoto(selfieData,"history-photo","Current selfie"));
+
+    await refreshHistory();
+
+    selfieData = "";
+    $("selfiePreview").removeAttribute("src");
+    $("selfiePreview").classList.add("hidden");
+    $("selfieStatus").textContent = "Selfie submitted. Take a new selfie for the next entry.";
+  } catch(error) {
+    showStatus(error.message || "Could not save attendance.","error");
   } finally {
-    busy = false;
-    $("submit").textContent = "Submit Attendance";
-    updateSubmit();
+    submitting = false;
+    $("clockBtn").textContent = "CLOCK IN / OUT";
+    updateButton();
   }
 }
 
-async function refreshSummary() {
-  if (!employee) return;
+async function startQrScanner() {
+  if(typeof Html5Qrcode === "undefined") {
+    showStatus("QR scanner library did not load. Check your internet connection.","error");
+    return;
+  }
+
+  $("qr-reader").classList.remove("hidden");
+  $("scanBtn").disabled = true;
+  $("stopScanBtn").disabled = false;
+
   try {
-    const r = await api({action:"summary",employeeId:employee.id});
-    if (!r.ok) throw new Error(r.message);
-    $("summaryDate").textContent = "Date: " + r.date + " · Blank means no entry.";
-    $("tIn").textContent = r.times["TIME IN"] || "";
-    $("bOut").textContent = r.times["BREAK OUT"] || "";
-    $("bIn").textContent = r.times["BREAK IN"] || "";
-    $("tOut").textContent = r.times["TIME OUT"] || "";
-  } catch(e) {
-    message("Could not load attendance summary: " + e.message,"err");
+    scanner = new Html5Qrcode("qr-reader");
+    await scanner.start(
+      {facingMode:"environment"},
+      {fps:10,qrbox:{width:230,height:230}},
+      async decoded => {
+        $("employeeId").value = decoded.trim();
+        await stopQrScanner();
+        await lookupEmployee(decoded.trim());
+      },
+      () => {}
+    );
+  } catch(error) {
+    $("qr-reader").classList.add("hidden");
+    $("scanBtn").disabled = false;
+    $("stopScanBtn").disabled = true;
+    showStatus("QR scanner could not start. Allow camera access or enter the ID manually.","error");
   }
 }
 
-$("scanBtn").onclick = startScanner;
-$("stopBtn").onclick = stopScanner;
-$("findBtn").onclick = ()=>lookup($("empId").value);
-$("empId").onkeydown = e=>{if(e.key==="Enter") lookup($("empId").value);};
-$("openCamera").onclick = openCamera;
-$("takePhoto").onclick = takeSelfie;
-$("retake").onclick = ()=>{
-  selfie="";
-  $("previewBox").classList.add("hidden");
-  updateSubmit();
-  openCamera();
-};
-$("submit").onclick = submitAttendance;
-$("refresh").onclick = refreshSummary;
-document.querySelectorAll("[data-action]").forEach(btn=>{
-  btn.onclick = ()=>{
-    action = btn.dataset.action;
-    document.querySelectorAll("[data-action]").forEach(b=>b.classList.toggle("active",b===btn));
-    $("confirmation").classList.add("hidden");
-  };
+async function stopQrScanner() {
+  if(scanner) {
+    try { if(scanner.isScanning) await scanner.stop(); } catch(error) {}
+    try { await scanner.clear(); } catch(error) {}
+    scanner = null;
+  }
+  $("qr-reader").classList.add("hidden");
+  $("scanBtn").disabled = false;
+  $("stopScanBtn").disabled = true;
+}
+
+$("findBtn").addEventListener("click",() => lookupEmployee($("employeeId").value));
+$("employeeId").addEventListener("keydown",e => {
+  if(e.key === "Enter") lookupEmployee($("employeeId").value);
 });
+$("cameraBtn").addEventListener("click",startCamera);
+$("captureBtn").addEventListener("click",captureSelfie);
+$("clockBtn").addEventListener("click",clockInOut);
+$("scanBtn").addEventListener("click",startQrScanner);
+$("stopScanBtn").addEventListener("click",stopQrScanner);
+$("refreshBtn").addEventListener("click",refreshHistory);
+
+$("todayDate").textContent = new Date().toLocaleDateString("en-PH",{
+  year:"numeric",month:"short",day:"numeric"
+});
+
+if(!API_URL.includes("https://script.google.com/macros/s/AKfycbzaGzm5DCuX9-27J_qeoScviUz90YKiV1bVPUfqKuqg2mIhXdQKEVbH1d8uM7eeDlx-xQ/exec")) {
+  jsonp({action:"ping"}).catch(() => {
+    showStatus("Cannot connect to Apps Script. Check the /exec URL and deployment settings.","error");
+  });
+}
+updateButton();
 </script>
 </body>
 </html>
