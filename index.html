@@ -168,7 +168,7 @@ footer{text-align:center;color:#98a2b3;font-size:11px;padding:20px}
 
 <script>
 /* PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT URL ENDING IN /exec BELOW */
-const API_URL = "https://script.google.com/macros/s/AKfycbzaGzm5DCuX9-27J_qeoScviUz90YKiV1bVPUfqKuqg2mIhXdQKEVbH1d8uM7eeDlx-xQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyhY5BsR1RdwD71_0ujt3mL83FA9XUlTopSbYB8HCH9pAe9ohYTVjLpvmiHSWWWBOsOdA/exec";
 
 const ACTIONS = ["AM Time In","AM Time Out","PM Time In","PM Time Out"];
 const $ = id => document.getElementById(id);
@@ -188,7 +188,7 @@ function clearStatus() {
   $("status").textContent = "";
 }
 function apiReady() {
-  if (API_URL.includes("https://script.google.com/macros/s/AKfycbzaGzm5DCuX9-27J_qeoScviUz90YKiV1bVPUfqKuqg2mIhXdQKEVbH1d8uM7eeDlx-xQ/exec")) {
+  if (API_URL.includes("https://script.google.com/macros/s/AKfycbyhY5BsR1RdwD71_0ujt3mL83FA9XUlTopSbYB8HCH9pAe9ohYTVjLpvmiHSWWWBOsOdA/exec")) {
     showStatus("Add your Apps Script /exec URL in index.html first.", "error");
     return false;
   }
